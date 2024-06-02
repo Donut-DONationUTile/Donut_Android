@@ -1,4 +1,4 @@
-# DONUT_Android [![APK file](https://img.shields.io/badge/-APK%20file-blue)](https://drive.google.com/file/d/1g9B9qp6Sc10ojrjxJZ483lGM3o34yWJt/view?usp=sharing) [![Demo Video](https://img.shields.io/badge/-Demo%20Video-red)](https://youtu.be/qjlmdKrCPaI)
+# [2024 GDSC Solution Challenge Top 10] DONUT_Android [![APK file](https://img.shields.io/badge/-APK%20file-blue)](https://drive.google.com/file/d/1g9B9qp6Sc10ojrjxJZ483lGM3o34yWJt/view?usp=sharing) [![Demo Video](https://img.shields.io/badge/-Demo%20Video-red)](https://youtu.be/qjlmdKrCPaI)
 
 >_“A shilling is the measure of less pleasure, or satisfaction of any kind, to a rich man than to a poor one. The happiness which an additional shilling brings to a poor man is much greater than that which it brings to a rich one.”_
 </br></br>_- Principles of Economics (8th ed.) PLL v6.0 (generated September, 2011) 16 -_
