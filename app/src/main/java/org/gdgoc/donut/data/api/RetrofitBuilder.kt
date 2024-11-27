@@ -1,14 +1,13 @@
-package org.gdsc.donut.data.api
+package org.gdgoc.donut.data.api
 
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 
 object RetrofitBuilder {
-    private const val BASE_URL = "http://34.64.166.104:8080/api/"
+    private const val BASE_URL = "http://34.64.34.125:8080/api/"
     private const val Google_URL = "https://www.googleapis.com"
 
     private val client = OkHttpClient.Builder()
