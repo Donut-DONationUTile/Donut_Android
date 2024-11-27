@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'org.gdsc.donut'
+    namespace 'org.gdgoc.donut'
     compileSdk 34
 
     defaultConfig {
-        applicationId "org.gdsc.donut"
+        applicationId "org.gdgoc.donut"
         minSdk 33
         targetSdk 33
         versionCode 1
