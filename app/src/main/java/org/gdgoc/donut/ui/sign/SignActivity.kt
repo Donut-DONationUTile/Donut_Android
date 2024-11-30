@@ -18,6 +18,7 @@ import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.databinding.ActivitySignBinding
 import org.gdgoc.donut.ui.GiverMainActivity
 import org.gdgoc.donut.ui.ReceiverMainActivity
+import org.gdgoc.donut.ui.viewModel.NetworkState
 import org.gdgoc.donut.ui.viewModel.SignViewModel
 
 class SignActivity : AppCompatActivity() {
@@ -98,14 +99,6 @@ class SignActivity : AppCompatActivity() {
     }
 */
 
-    private fun setGiverUserInfo(){
-        viewModel.giverSignInInfo.observe(this, Observer { data->
-            DonutSharedPreferences.setAccessToken(data.data?.accesstoken)
-            DonutSharedPreferences.setUserRole("giver")
-            startActivity(Intent(this, GiverMainActivity::class.java))
-        })
-    }
-
     private fun setContinueBtn() {
         binding.btnCreate.setOnClickListener {
             startActivity(Intent(this, SignUpConfirmActivity::class.java))
@@ -171,26 +164,52 @@ class SignActivity : AppCompatActivity() {
         val id = binding.etUsername.text.toString()
         val password = binding.etPassword.text.toString()
         viewModel.requestReceiverSignIn(id, password)
-        handleNetworkException()
+        setReceiverUserInfo()
     }
 
-    private fun handleNetworkException() {
-        viewModel.receiverSignInInfo.observe(this, Observer { data ->
-            when (data.code) {
-                201 -> {
-                    viewModel.saveUserId(data.data?.name)
-                    viewModel.saveAccessToken(data.data?.accesstoken)
-                    DonutSharedPreferences.setUserRole("receiver")
-                    startActivity(Intent(this, ReceiverMainActivity::class.java))
-                    finish()
+    private fun setGiverUserInfo() {
+        viewModel.giverSignInInfo.observe(this, Observer { state ->
+            when (state) {
+                is NetworkState.Loading -> {
+                    Toast.makeText(this, "잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
                 }
-
-                409 -> {
-                    Toast.makeText(this, "아이디 혹은 패스워드를 확인해주세요.", Toast.LENGTH_SHORT).show()
+                is NetworkState.Success -> {
+                    val accessToken = state.data.data?.accesstoken
+                    if (accessToken != null) {
+                        DonutSharedPreferences.setAccessToken(accessToken)
+                        DonutSharedPreferences.setUserRole("giver")
+                        startActivity(Intent(this, GiverMainActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "유효하지 않은 정보입니다.", Toast.LENGTH_SHORT).show()
+                    }
                 }
+                is NetworkState.Error -> {
+                    Toast.makeText(this, "잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
 
-                else -> {
-                    Toast.makeText(this, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+    private fun setReceiverUserInfo() {
+        viewModel.receiverSignInInfo.observe(this, Observer { state ->
+            when (state) {
+                is NetworkState.Loading -> {
+                    Toast.makeText(this, "잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
+                }
+                is NetworkState.Success -> {
+                    val accessToken = state.data.data?.accesstoken
+                    if (accessToken != null) {
+                        DonutSharedPreferences.setAccessToken(accessToken)
+                        DonutSharedPreferences.setUserRole("giver")
+                        startActivity(Intent(this, GiverMainActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "유효하지 않은 정보입니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                is NetworkState.Error -> {
+                    Toast.makeText(this, "잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         })

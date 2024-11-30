@@ -10,7 +10,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import org.gdgoc.donut.R
+import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.databinding.ActivitySignUpBinding
+import org.gdgoc.donut.ui.GiverMainActivity
+import org.gdgoc.donut.ui.viewModel.NetworkState
 import org.gdgoc.donut.ui.viewModel.SignViewModel
 
 class SignUpActivity : AppCompatActivity() {
@@ -109,24 +112,26 @@ class SignUpActivity : AppCompatActivity() {
         val id = binding.etUsername.text.toString()
         val password = binding.etPassword.text.toString()
         viewModel.requestReceiverSignUp(id, password)
-        handleNetworkException()
+        setReceiverUserInfo()
     }
 
-    private fun handleNetworkException(){
-        viewModel.receiverSignUpInfo.observe(this, Observer { data ->
-            when (data.code) {
-                201 -> {
+    private fun setReceiverUserInfo() {
+        viewModel.receiverSignUpInfo.observe(this, Observer { state ->
+            when (state) {
+                is NetworkState.Loading -> {
+                    Toast.makeText(this, "잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
+                }
+                is NetworkState.Success -> {
                     startActivity(Intent(this, SignUpDoneActivity::class.java))
                     finish()
                 }
-                409 -> {
+                is NetworkState.Error -> {
                     binding.ivCancel.visibility = View.VISIBLE
                     binding.tvCheck.visibility = View.VISIBLE
-                }
-                else -> {
                     Toast.makeText(this, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         })
     }
+
 }

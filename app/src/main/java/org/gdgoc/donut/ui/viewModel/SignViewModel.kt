@@ -9,37 +9,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.data.api.RetrofitBuilder
-import org.gdgoc.donut.data.remote.request.auth.RequestGoogleLogin
-import org.gdgoc.donut.data.remote.request.auth.RequestSendFCMToken
-import org.gdgoc.donut.data.remote.request.auth.RequestSignInGiver
-import org.gdgoc.donut.data.remote.request.auth.RequestSignInReceiver
-import org.gdgoc.donut.data.remote.request.auth.RequestSignUpReceiver
-import org.gdgoc.donut.data.remote.response.auth.ResponseGoogleLogin
-import org.gdgoc.donut.data.remote.response.auth.ResponseSendFCMToken
-import org.gdgoc.donut.data.remote.response.auth.ResponseSignInGiver
-import org.gdgoc.donut.data.remote.response.auth.ResponseSignInReceiver
-import org.gdgoc.donut.data.remote.response.auth.ResponseSignUpReceiver
+import org.gdgoc.donut.data.remote.request.auth.*
+import org.gdgoc.donut.data.remote.response.auth.*
+import org.gdgoc.donut.util.Event
+
+sealed class NetworkState<out T> {
+    data class Success<T>(val data: T) : NetworkState<T>()
+    data class Error(val message: String) : NetworkState<Nothing>()
+    object Loading : NetworkState<Nothing>()
+}
 
 class SignViewModel(application: Application) : AndroidViewModel(application) {
-    private val _receiverSignUpInfo = MutableLiveData<ResponseSignUpReceiver>()
-    val receiverSignUpInfo: LiveData<ResponseSignUpReceiver>
-        get() = _receiverSignUpInfo
 
-    private val _receiverSignInInfo = MutableLiveData<ResponseSignInReceiver>()
-    val receiverSignInInfo: LiveData<ResponseSignInReceiver>
-        get() = _receiverSignInInfo
+    private val _receiverSignUpInfo = MutableLiveData<NetworkState<ResponseSignUpReceiver>>()
+    val receiverSignUpInfo: LiveData<NetworkState<ResponseSignUpReceiver>> get() = _receiverSignUpInfo
 
-    private val _giverSignInInfo = MutableLiveData<ResponseSignInGiver>()
-    val giverSignInInfo: LiveData<ResponseSignInGiver>
-        get() = _giverSignInInfo
+    private val _receiverSignInInfo = MutableLiveData<NetworkState<ResponseSignInReceiver>>()
+    val receiverSignInInfo: LiveData<NetworkState<ResponseSignInReceiver>> get() = _receiverSignInInfo
 
-    private val _googleLoginInfo = MutableLiveData<ResponseGoogleLogin>()
-    val googleLoginInfo: LiveData<ResponseGoogleLogin>
-        get() = _googleLoginInfo
+    private val _giverSignInInfo = MutableLiveData<NetworkState<ResponseSignInGiver>>()
+    val giverSignInInfo: LiveData<NetworkState<ResponseSignInGiver>> get() = _giverSignInInfo
 
-    private val _fcmInfo = MutableLiveData<ResponseSendFCMToken>()
-    val fcmInfo: LiveData<ResponseSendFCMToken>
-        get() = _fcmInfo
+    private val _googleLoginInfo = MutableLiveData<NetworkState<ResponseGoogleLogin>>()
+    val googleLoginInfo: LiveData<NetworkState<ResponseGoogleLogin>> get() = _googleLoginInfo
+
+    private val _fcmInfo = MutableLiveData<NetworkState<ResponseSendFCMToken>>()
+    val fcmInfo: LiveData<NetworkState<ResponseSendFCMToken>> get() = _fcmInfo
+
+    private val _showErrorToast = MutableLiveData<Event<String>>()
+    val showErrorToast: LiveData<Event<String>> get() = _showErrorToast
 
     fun saveUserId(id: String?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -47,45 +45,60 @@ class SignViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun saveAccessToken(token: String?){
+    fun saveAccessToken(token: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             DonutSharedPreferences.setAccessToken(token)
         }
     }
 
-    fun requestReceiverSignUp(id: String, password: String) =
+    private fun <T> handleRequest(
+        liveData: MutableLiveData<NetworkState<T>>,
+        requestBlock: suspend () -> T
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
-            _receiverSignUpInfo.postValue(
-                RetrofitBuilder.authService.signUpReceiver(
-                    RequestSignUpReceiver(id, password)
-                )
-            )
+            liveData.postValue(NetworkState.Loading)
+            try {
+                val response = requestBlock()
+                liveData.postValue(NetworkState.Success(response))
+            } catch (e: Exception) {
+                liveData.postValue(NetworkState.Error("Error: ${e.message}"))
+                _showErrorToast.postValue(Event("An error occurred: ${e.message}"))
+            }
         }
+    }
 
-    fun requestReceiverSignIn(id: String, password: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            _receiverSignInInfo.postValue(
-                RetrofitBuilder.authService.signInReceiver(
-                    RequestSignInReceiver(id, password)
-                )
-            )
+    fun requestReceiverSignUp(id: String, password: String) {
+        handleRequest(_receiverSignUpInfo) {
+            RetrofitBuilder.authService.signUpReceiver(RequestSignUpReceiver(id, password))
         }
+    }
 
-    fun requestGiverSignIn(idToken: String) = viewModelScope.launch(Dispatchers.IO) {
-        _giverSignInInfo.postValue(
+    fun requestReceiverSignIn(id: String, password: String) {
+        handleRequest(_receiverSignInInfo) {
+            RetrofitBuilder.authService.signInReceiver(RequestSignInReceiver(id, password))
+        }
+    }
+
+    fun requestGiverSignIn(idToken: String) {
+        handleRequest(_giverSignInInfo) {
             RetrofitBuilder.authService.signInGiver(RequestSignInGiver(idToken))
-        )
+        }
     }
 
-    fun requestGoogleLogin(clientId: String, clientSecret: String, code: String, grantType: String, redirectUri: String)= viewModelScope.launch(Dispatchers.IO) {
-        _googleLoginInfo.postValue(
-            RetrofitBuilder.googleService.signInWithGoogle(RequestGoogleLogin(clientId, clientSecret, code, grantType, redirectUri))
-        )
+    fun requestGoogleLogin(clientId: String, clientSecret: String, code: String, grantType: String, redirectUri: String) {
+        handleRequest(_googleLoginInfo) {
+            RetrofitBuilder.googleService.signInWithGoogle(
+                RequestGoogleLogin(clientId, clientSecret, code, grantType, redirectUri)
+            )
+        }
     }
 
-    fun sendFCMToken(accessToken: String, token: String) = viewModelScope.launch(Dispatchers.IO) {
-        _fcmInfo.postValue(
-            RetrofitBuilder.authService.sendFCMToken("Bearer $accessToken", RequestSendFCMToken(token))
-        )
+    fun sendFCMToken(accessToken: String, token: String) {
+        handleRequest(_fcmInfo) {
+            RetrofitBuilder.authService.sendFCMToken(
+                "Bearer $accessToken",
+                RequestSendFCMToken(token)
+            )
+        }
     }
 }
