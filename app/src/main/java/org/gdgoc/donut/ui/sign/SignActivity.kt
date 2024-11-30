@@ -197,8 +197,8 @@ class SignActivity : AppCompatActivity() {
                     val accessToken = state.data.data?.accesstoken
                     if (accessToken != null) {
                         DonutSharedPreferences.setAccessToken(accessToken)
-                        DonutSharedPreferences.setUserRole("giver")
-                        startActivity(Intent(this, GiverMainActivity::class.java))
+                        DonutSharedPreferences.setUserRole("receiver")
+                        startActivity(Intent(this, ReceiverMainActivity::class.java))
                         finish()
                     } else {
                         Toast.makeText(this, "유효하지 않은 정보입니다.", Toast.LENGTH_SHORT).show()
