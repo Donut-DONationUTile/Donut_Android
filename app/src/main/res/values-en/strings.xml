@@ -92,6 +92,7 @@
 
     <!-- GiverWalletFragment -->
     <string name="giverWallet_donate_title">Donate your donuts!</string>
+    <string name="giverWallet_donate_title2">Your total amount for\ngifticon is</string>
     <string name="giverWallet_donate">Donate</string>
 
     <!-- WalletDetailFragment -->

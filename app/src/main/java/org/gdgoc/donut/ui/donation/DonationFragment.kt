@@ -63,7 +63,6 @@ class DonationFragment : Fragment() {
         checkAmountStatus()
         checkDueDateStatus()
         setStoreList()
-        setSwitch()
         setUploadButton()
         setDonateButton()
 
@@ -269,18 +268,6 @@ class DonationFragment : Fragment() {
                 binding.tvGs25.setTextColor(resources.getColor(R.color.main_coral))
                 store = "GS25"
                 setDonateButton()
-            }
-        }
-    }
-
-    private fun setSwitch(){
-        binding.swResolution.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                highResolution = true
-                binding.tvResolution.setTextColor(resources.getColor(R.color.main_coral))
-            } else{
-                highResolution = false
-                binding.tvResolution.setTextColor(resources.getColor(R.color.gray_300))
             }
         }
     }
