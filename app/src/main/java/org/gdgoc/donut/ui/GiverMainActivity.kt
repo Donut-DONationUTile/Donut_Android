@@ -45,7 +45,7 @@ class GiverMainActivity : AppCompatActivity() {
 
         setBottomNavigation()
         setFloatingButton()
-        askNotificationPermission()
+        //askNotificationPermission()
     }
 
     override fun onBackPressed() {
