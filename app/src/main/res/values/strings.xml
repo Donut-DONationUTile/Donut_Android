@@ -109,8 +109,10 @@
     <string name="giverHistory_received">전달</string>
     <string name="giverHistory_msg">메세지</string>
     <string name="giverHistory_givenDay">기부한 날짜</string>
+    <string name="giverHistory_receivedDay">받은 날짜</string>
     <string name="giverHistory_to">받은 사람</string>
     <string name="giverHistory_receivedMsg">받은 메세지</string>
+    <string name="giverHistory_sentMsg">보낸 메세지</string>
     <string name="giverHistory_NoReceivedMsg">haven’t\nreceived yet</string>
 
     <!-- ReceiverHistoryFragment -->

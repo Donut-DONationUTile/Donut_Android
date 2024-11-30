@@ -109,8 +109,10 @@
     <string name="giverHistory_received">received</string>
     <string name="giverHistory_msg">msg</string>
     <string name="giverHistory_givenDay">the day you give</string>
+    <string name="giverHistory_receivedDay">the day you received</string>
     <string name="giverHistory_to">to</string>
     <string name="giverHistory_receivedMsg">the message\nyou received</string>
+    <string name="giverHistory_sentMsg">the message\nyou sent</string>
     <string name="giverHistory_NoReceivedMsg">haven’t\nreceived yet</string>
 
     <!-- ReceiverHistoryFragment -->

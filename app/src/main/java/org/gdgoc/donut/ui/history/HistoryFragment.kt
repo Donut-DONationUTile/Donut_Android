@@ -7,12 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.R
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import org.gdgoc.donut.data.DonutSharedPreferences
+import org.gdgoc.donut.data.remote.response.history.ResponseHistoryGiverDonationList
+import org.gdgoc.donut.data.remote.response.history.ResponseHistoryReceiverGift
 import org.gdgoc.donut.databinding.FragmentHistoryBinding
 import org.gdgoc.donut.ui.GiverMainActivity
 import org.gdgoc.donut.ui.ReceiverMainActivity
@@ -20,6 +22,7 @@ import org.gdgoc.donut.ui.history.adapter.GiverHistoryAdapter
 import org.gdgoc.donut.ui.history.adapter.MonthAdapter
 import org.gdgoc.donut.ui.history.adapter.ReceiverHistoryAdapter
 import org.gdgoc.donut.ui.viewModel.HistoryViewModel
+import org.gdgoc.donut.util.NetworkState
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -50,28 +53,15 @@ class HistoryFragment : Fragment() {
         val years = arrayOf(2024, 2023, 2022, 2021)
         val yearSpinner = binding.spnYearMenu
         val spinnerAdapter: ArrayAdapter<Int>? = context?.let {
-            ArrayAdapter(
-                it,
-                R.layout.support_simple_spinner_dropdown_item,
-                years
-            )
+            ArrayAdapter(it, R.layout.support_simple_spinner_dropdown_item, years)
         }
         spinnerAdapter?.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
         yearSpinner.adapter = spinnerAdapter
         yearSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
+            override fun onItemSelected( parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 filteredYear = parent?.getItemAtPosition(position) as Int
-                initNetwork(
-                    LocalDateTime.now().withYear(filteredYear).withMonth(filteredMonth)
-                        .withDayOfMonth(1)
-                )
+                initNetwork(LocalDateTime.now().withYear(filteredYear).withMonth(filteredMonth).withDayOfMonth(1))
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
@@ -109,15 +99,7 @@ class HistoryFragment : Fragment() {
             viewModel.setGiftId(giverItemAdapter.itemList[giverItemAdapter.mPosition].giftId)
             (activity as GiverMainActivity).changeFragment("history_detail")
         }
-        setGiverDataList()
-    }
-
-    private fun setGiverDataList() {
-        viewModel.giverHistoryInfo.observe(viewLifecycleOwner, Observer { data ->
-            with(binding.rvGiftItem.adapter as GiverHistoryAdapter) {
-                data.data!!.donationList?.let { giverItemAdapter.setGiftItemList(it) }
-            }
-        })
+        setDataList(true)
     }
 
     private fun setReceiverAdapter() {
@@ -129,14 +111,28 @@ class HistoryFragment : Fragment() {
             viewModel.setGiftId(receiverItemAdapter.itemList[receiverItemAdapter.mPosition].giftId)
             (activity as ReceiverMainActivity).changeFragment("history_detail")
         }
-        setReceiverDataList()
+        setDataList(false)
     }
 
-    private fun setReceiverDataList() {
-        viewModel.receiverHistoryInfo.observe(viewLifecycleOwner, Observer { data ->
-            with(binding.rvGiftItem.adapter as ReceiverHistoryAdapter) {
-                data.data!!.giftList?.let { receiverItemAdapter.setGiftItemList(it) }
+    private fun setDataList(isGiver: Boolean) {
+        val liveData = if (isGiver) viewModel.giverHistoryInfo else viewModel.receiverHistoryInfo
+        val adapter = binding.rvGiftItem.adapter
+
+        liveData.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is NetworkState.Loading -> { }
+                is NetworkState.Success -> {
+                    if (isGiver && adapter is GiverHistoryAdapter) {
+                        (state.data as? ResponseHistoryGiverDonationList)?.let { adapter.setGiftItemList(listOf(it)) }
+                    } else if (!isGiver && adapter is ReceiverHistoryAdapter) {
+                        (state.data as? ResponseHistoryReceiverGift)?.let { adapter.setGiftItemList(it) }
+                    }
+                }
+                is NetworkState.Error -> {
+                    Toast.makeText(context, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
             }
-        })
+        }
     }
+
 }

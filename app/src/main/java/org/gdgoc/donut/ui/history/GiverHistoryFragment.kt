@@ -7,17 +7,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import org.gdgoc.donut.R
 import org.gdgoc.donut.data.DonutSharedPreferences
+import org.gdgoc.donut.data.remote.response.history.ResponseHistoryGiverData
+import org.gdgoc.donut.data.remote.response.history.ResponseHistoryGiverDonationList
 import org.gdgoc.donut.databinding.FragmentGiverHistoryBinding
 import org.gdgoc.donut.ui.GiverMainActivity
 import org.gdgoc.donut.ui.history.adapter.GiverHistoryAdapter
 import org.gdgoc.donut.ui.history.adapter.MonthAdapter
 import org.gdgoc.donut.ui.viewModel.HistoryViewModel
+import org.gdgoc.donut.util.NetworkState
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -38,10 +41,16 @@ class GiverHistoryFragment : Fragment() {
         setDropDownMenu()
         setChipAdapter()
         initNetwork(LocalDateTime.now().withDayOfMonth(1))
-        getReceiverHomeBoxInfo()
+        getGiverHistoryInfo()
         setAdapter()
 
         return binding.root
+    }
+
+    private fun initNetwork(date: LocalDateTime) {
+        DonutSharedPreferences.getAccessToken()?.let { token ->
+            viewModel.requestGiverHistoryInfo(token, date)
+        }
     }
 
     @SuppressLint("ResourceType")
@@ -58,17 +67,9 @@ class GiverHistoryFragment : Fragment() {
         spinnerAdapter?.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
         yearSpinner.adapter = spinnerAdapter
         yearSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 filteredYear = parent?.getItemAtPosition(position) as Int
-                initNetwork(
-                    LocalDateTime.now().withYear(filteredYear).withMonth(filteredMonth)
-                        .withDayOfMonth(1)
-                )
+                initNetwork(LocalDateTime.now().withYear(filteredYear).withMonth(filteredMonth).withDayOfMonth(1))
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -89,22 +90,40 @@ class GiverHistoryFragment : Fragment() {
         }
     }
 
-    private fun initNetwork(date: LocalDateTime) {
-        DonutSharedPreferences.getAccessToken()?.let { viewModel.requestGiverHistoryInfo(it, date) }
+    private fun getGiverHistoryInfo() {
+        viewModel.giverHistoryInfo.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is NetworkState.Loading -> {}
+                is NetworkState.Success -> {
+                    val data = state.data.data
+                    if (data != null) updateHistoryInfoUI(data)
+                    if (data != null) data.donationList?.let { updateGiftItemList(it) }
+                }
+                is NetworkState.Error -> {
+                    Toast.makeText(context, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
-    private fun getReceiverHomeBoxInfo() {
-        viewModel.giverHistoryInfo.observe(viewLifecycleOwner, Observer { data ->
-            binding.tvDollarNum.text = data.data!!.totalAmount.toString()
-            binding.tvUnreceivedNum.text = data.data.unreceived.toString()
-            binding.tvReceivedNum.text = data.data.received.toString()
-            binding.tvMsgNum.text = data.data.msg.toString()
+    private fun updateHistoryInfoUI(data: ResponseHistoryGiverData) {
+        binding.tvDollarNum.text = data.totalAmount.toString()
+        binding.tvUnreceivedNum.text = data.unreceived.toString()
+        binding.tvReceivedNum.text = data.received.toString()
+        binding.tvMsgNum.text = data.msg.toString()
 
-            if (data.data.period >= 2) {
-                binding.tvTitleYearNum.text = data.data.period.toString()
-                binding.tvTitleYear.text = getString(R.string.giverHistory_years)
-            } else binding.tvTitleYearNum.text = "a"
-        })
+        if (data.period >= 2) {
+            binding.tvTitleYearNum.text = data.period.toString()
+            binding.tvTitleYear.text = getString(R.string.giverHistory_years)
+        } else {
+            binding.tvTitleYearNum.text = "a"
+        }
+    }
+
+    private fun updateGiftItemList(donationList: List<ResponseHistoryGiverDonationList>) {
+        donationList.let {
+            itemAdapter.setGiftItemList(it)
+        }
     }
 
     private fun setAdapter() {
@@ -112,18 +131,10 @@ class GiverHistoryFragment : Fragment() {
         binding.rvGiftItem.adapter = itemAdapter
         binding.rvGiftItem.layoutManager = GridLayoutManager(context, 2)
 
-        itemAdapter.setOnItemClickListener { _, pos ->
-            viewModel.setGiftId(itemAdapter.itemList[itemAdapter.mPosition].giftId)
+        itemAdapter.setOnItemClickListener { _, _ ->
+            val selectedGiftId = itemAdapter.itemList[itemAdapter.mPosition].giftId
+            viewModel.setGiftId(selectedGiftId)
             (activity as GiverMainActivity).changeFragment("history_detail")
         }
-        setDataList()
-    }
-
-    private fun setDataList() {
-        viewModel.giverHistoryInfo.observe(viewLifecycleOwner, Observer { data ->
-            with(binding.rvGiftItem.adapter as GiverHistoryAdapter) {
-                data.data!!.donationList?.let { itemAdapter.setGiftItemList(it) }
-            }
-        })
     }
 }
