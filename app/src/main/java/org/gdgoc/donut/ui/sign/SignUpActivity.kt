@@ -10,11 +10,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import org.gdgoc.donut.R
-import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.databinding.ActivitySignUpBinding
-import org.gdgoc.donut.ui.GiverMainActivity
-import org.gdgoc.donut.ui.viewModel.NetworkState
 import org.gdgoc.donut.ui.viewModel.SignViewModel
+import org.gdgoc.donut.util.NetworkState
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding

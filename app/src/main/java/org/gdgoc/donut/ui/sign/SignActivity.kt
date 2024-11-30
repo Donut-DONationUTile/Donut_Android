@@ -18,8 +18,8 @@ import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.databinding.ActivitySignBinding
 import org.gdgoc.donut.ui.GiverMainActivity
 import org.gdgoc.donut.ui.ReceiverMainActivity
-import org.gdgoc.donut.ui.viewModel.NetworkState
 import org.gdgoc.donut.ui.viewModel.SignViewModel
+import org.gdgoc.donut.util.NetworkState
 
 class SignActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignBinding

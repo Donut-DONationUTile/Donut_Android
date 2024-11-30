@@ -12,12 +12,7 @@ import org.gdgoc.donut.data.api.RetrofitBuilder
 import org.gdgoc.donut.data.remote.request.auth.*
 import org.gdgoc.donut.data.remote.response.auth.*
 import org.gdgoc.donut.util.Event
-
-sealed class NetworkState<out T> {
-    data class Success<T>(val data: T) : NetworkState<T>()
-    data class Error(val message: String) : NetworkState<Nothing>()
-    object Loading : NetworkState<Nothing>()
-}
+import org.gdgoc.donut.util.NetworkState
 
 class SignViewModel(application: Application) : AndroidViewModel(application) {
 
