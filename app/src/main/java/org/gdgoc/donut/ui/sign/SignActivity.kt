@@ -170,9 +170,7 @@ class SignActivity : AppCompatActivity() {
     private fun setGiverUserInfo() {
         viewModel.giverSignInInfo.observe(this, Observer { state ->
             when (state) {
-                is NetworkState.Loading -> {
-                    Toast.makeText(this, "잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
-                }
+                is NetworkState.Loading -> {}
                 is NetworkState.Success -> {
                     val accessToken = state.data.data?.accesstoken
                     if (accessToken != null) {
@@ -194,9 +192,7 @@ class SignActivity : AppCompatActivity() {
     private fun setReceiverUserInfo() {
         viewModel.receiverSignInInfo.observe(this, Observer { state ->
             when (state) {
-                is NetworkState.Loading -> {
-                    Toast.makeText(this, "잠시만 기다려주세요.", Toast.LENGTH_SHORT).show()
-                }
+                is NetworkState.Loading -> {}
                 is NetworkState.Success -> {
                     val accessToken = state.data.data?.accesstoken
                     if (accessToken != null) {
