@@ -110,7 +110,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="24dp"
                     android:fontFamily="@font/pretendard_semibold"
-                    android:text="Your total amount for\ngifticon is"
+                    android:text="@string/giverWallet_donate_title2"
                     android:textColor="@color/black_100"
                     android:textSize="24sp"
                     app:layout_constraintStart_toStartOf="parent"

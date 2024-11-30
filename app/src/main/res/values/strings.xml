@@ -19,8 +19,8 @@
     <string name="sign_receiver">수혜자</string>
     <string name="sign_username">닉네임 입력</string>
     <string name="sign_password">비밀번호 입력</string>
-    <string name="sign_login">Login</string>
-    <string name="sign_create">Create account</string>
+    <string name="sign_login">로그인</string>
+    <string name="sign_create">회원가입</string>
 
     <!-- SignUpActivity -->
     <string name="sign_up_title">Sign up for Donut</string>
@@ -33,7 +33,7 @@
 
     <!-- SignUpConfirmActivity -->
     <string name="sign_up_confirm_title">We have to\nconfirm your\nstatus</string>
-    <string name="sign_up_confirm_upload">Upload</string>
+    <string name="sign_up_confirm_upload">업로드</string>
     <string name="sign_up_confirm_welcome">Welcome!</string>
 
     <!--MainActivity-->
@@ -65,7 +65,7 @@
     <string name="donation_agree_agree">동의합니다</string>
     <string name="donation_agree_disagree">나중에 할게요</string>
     <string name="donation_done">You\'ve done!</string>
-    <string name="donation_resolution">화질개선</string>
+    <string name="donation_resolution">화질 개선</string>
 
     <!-- Receive -->
     <string name="receive_title">Let\'s get\nthe donut box!</string>
@@ -77,11 +77,11 @@
     <string name="receive_done">완료</string>
 
     <!--GiverHomeFragment-->
-    <string name="giverHome_title"></string>
-    <string name="giverHome_title2"></string>
-    <string name="giverHome_title3"></string>
-    <string name="giverHome_need"></string>
-    <string name="giverHome_donated">총 기프티콘 금액</string>
+    <string name="giverHome_title">오늘도</string>
+    <string name="giverHome_title2">명의 친구들이</string>
+    <string name="giverHome_title3">기다리고 있어요</string>
+    <string name="giverHome_donated">you donate</string>
+    <string name="giverHome_need">while we need</string>
 
     <!-- ReceiverHomeFragment-->
     <string name="receiverHome_title">Now you can ask for\na donut box!</string>
@@ -92,6 +92,7 @@
 
     <!-- GiverWalletFragment -->
     <string name="giverWallet_donate_title">Donate your donuts!</string>
+    <string name="giverWallet_donate_title2">당신의 총 기프티콘 금액</string>
     <string name="giverWallet_donate">기부하기</string>
 
     <!-- WalletDetailFragment -->
@@ -99,11 +100,11 @@
     <string name="walletDetail_unused">미사용 시 눌러 주세요</string>
 
     <!--HistoryFragment-->
-    <string name="history_title">History / Message</string>
-    <string name="giverHistory_title">벌써</string>
-    <string name="giverHistory_title2">년이나</string>
-    <string name="giverHistory_years">기부하셨네요!</string>
-    <string name="giverHistory_year"></string>
+    <string name="history_title">기부 히스토리</string>
+    <string name="giverHistory_title">벌써 기부한 지</string>
+    <string name="giverHistory_title2"></string>
+    <string name="giverHistory_years"></string>
+    <string name="giverHistory_year">년이 지났어요!</string>
     <string name="giverHistory_total">총 기부액</string>
     <string name="giverHistory_unreceived">미전달</string>
     <string name="giverHistory_received">전달</string>
@@ -120,16 +121,16 @@
     <string name="receiverHistory_per">/</string>
 
     <!-- RankingFragment-->
-    <string name="ranking_title">Check Today\'s</string>
-    <string name="ranking_title2">Ranking</string>
-    <string name="ranking_title3">for fun!</string>
-    <string name="ranking_sum">SUM</string>
-    <string name="ranking_number">NUMBER</string>
+    <string name="ranking_title">재미를 위해</string>
+    <string name="ranking_title2">랭킹</string>
+    <string name="ranking_title3">을 살펴보세요!</string>
+    <string name="ranking_sum">기부 금액</string>
+    <string name="ranking_number">기부 횟수</string>
 
     <!-- MypageFragment -->
-    <string name="Mypage_history">History / Message</string>
-    <string name="Mypage_service">Terms of service</string>
-    <string name="Mypage_open_source">Open source</string>
+    <string name="Mypage_history">기부 히스토리</string>
+    <string name="Mypage_service">이용 약관</string>
+    <string name="Mypage_open_source">오픈 소스</string>
     <string name="Mypage_about">About</string>
 
     <!-- Message -->
