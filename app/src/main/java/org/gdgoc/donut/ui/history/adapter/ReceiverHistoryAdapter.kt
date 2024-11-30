@@ -75,8 +75,8 @@ class ReceiverHistoryAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setGiftItemList(data: List<ResponseHistoryReceiverGift>) {
-        this.itemList = data
+    fun setGiftItemList(data: ResponseHistoryReceiverGift) {
+        this.itemList = listOf(data)
         notifyDataSetChanged()
     }
 

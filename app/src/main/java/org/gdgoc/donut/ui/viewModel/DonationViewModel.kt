@@ -11,44 +11,35 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import org.gdgoc.donut.data.api.RetrofitBuilder
 import org.gdgoc.donut.data.remote.request.donation.RequestAssignReceiver
-import org.gdgoc.donut.data.remote.response.donation.ResponseAddToWallet
-import org.gdgoc.donut.data.remote.response.donation.ResponseAssignReceiver
-import org.gdgoc.donut.data.remote.response.donation.ResponseDirectDonation
-import org.gdgoc.donut.data.remote.response.donation.ResponseDonateGiver
+import org.gdgoc.donut.data.remote.response.donation.*
 import org.gdgoc.donut.util.Event
-import kotlin.Exception
+import org.gdgoc.donut.util.NetworkState
 
 class DonationViewModel(application: Application) : AndroidViewModel(application) {
-    private val _assignReceiverInfo = MutableLiveData<ResponseAssignReceiver>()
-    val assignReceiverInfo: LiveData<ResponseAssignReceiver>
-        get() = _assignReceiverInfo
 
-    private val _donateGiverInfo = MutableLiveData<ResponseDonateGiver>()
-    val donateGiverInfo: LiveData<ResponseDonateGiver>
-        get() = _donateGiverInfo
+    private val _assignReceiverInfo = MutableLiveData<NetworkState<ResponseAssignReceiver>>()
+    val assignReceiverInfo: LiveData<NetworkState<ResponseAssignReceiver>> get() = _assignReceiverInfo
 
-    private val _addToWalletInfo = MutableLiveData<ResponseAddToWallet>()
-    val addToWalletInfo: LiveData<ResponseAddToWallet>
-        get() = _addToWalletInfo
+    private val _donateGiverInfo = MutableLiveData<NetworkState<ResponseDonateGiver>>()
+    val donateGiverInfo: LiveData<NetworkState<ResponseDonateGiver>> get() = _donateGiverInfo
 
-    private val _donateDirectInfo = MutableLiveData<ResponseDirectDonation>()
-    val donateDirectInfo: LiveData<ResponseDirectDonation>
-        get() = _donateDirectInfo
+    private val _addToWalletInfo = MutableLiveData<NetworkState<ResponseAddToWallet>>()
+    val addToWalletInfo: LiveData<NetworkState<ResponseAddToWallet>> get() = _addToWalletInfo
 
-    private val _showErrorToast = MutableLiveData<Event<Boolean>>()
-    val showErrorToast: LiveData<Event<Boolean>> = _showErrorToast
+    private val _donateDirectInfo = MutableLiveData<NetworkState<ResponseDirectDonation>>()
+    val donateDirectInfo: LiveData<NetworkState<ResponseDirectDonation>> get() = _donateDirectInfo
 
     val sharedDirectDonationOption = MutableLiveData<Boolean>()
-    fun setDirectDonationOption(input: Boolean) {
-        sharedDirectDonationOption.value = input
-    }
-
-    private val sharedStoreName = MutableLiveData<String>()
+    val sharedStoreName = MutableLiveData<String>()
     val sharedGiftImageString = MutableLiveData<String>()
     val sharedProduct = MutableLiveData<RequestBody>()
     val sharedPrice = MutableLiveData<Int>()
     val sharedDueDate = MutableLiveData<RequestBody>()
     val sharedStore = MutableLiveData<RequestBody>()
+
+    fun setDirectDonationOption(input: Boolean) {
+        sharedDirectDonationOption.value = input
+    }
 
     fun setStoreName(input: String) {
         sharedStoreName.value = input
@@ -62,32 +53,41 @@ class DonationViewModel(application: Application) : AndroidViewModel(application
         sharedStore.value = store
     }
 
-    fun requestAssignReceiver(accessToken: String, price: Int) =
+    private fun <T> handleRequest(liveData: MutableLiveData<NetworkState<T>>, requestBlock: suspend () -> T) {
         viewModelScope.launch(Dispatchers.IO) {
+            liveData.postValue(NetworkState.Loading)
             try {
-            _assignReceiverInfo.postValue(sharedStoreName.value?.let { RequestAssignReceiver(it, price) }?.let {
-                    RetrofitBuilder.donationService.assignReceiver("Bearer $accessToken", it)
-                })
-            } catch (e: Exception){
-                _showErrorToast.postValue(Event(true))
+                val response = requestBlock()
+                liveData.postValue(NetworkState.Success(response))
+            } catch (e: Exception) {
+                liveData.postValue(NetworkState.Error(e.message ?: "Unknown error"))
             }
         }
+    }
 
-    fun requestDonateGiver(accessToken: String, giftImage: MultipartBody.Part?, product: RequestBody, price: Int, dueDate: RequestBody, store: RequestBody, isRestored: RequestBody) =
-        viewModelScope.launch(Dispatchers.IO) {
-            _donateGiverInfo.postValue(
-                RetrofitBuilder.donationService.donateGiver("Bearer $accessToken", giftImage, product, price, dueDate, store, isRestored)
-            )
+    fun requestAssignReceiver(accessToken: String, price: Int) {
+        handleRequest(_assignReceiverInfo) {
+            sharedStoreName.value?.let { RequestAssignReceiver(it, price) }?.let {
+                RetrofitBuilder.donationService.assignReceiver("Bearer $accessToken", it)
+            } ?: throw IllegalArgumentException("Store name is null")
         }
+    }
 
-    fun requestAddToWallet(accessToken: String, giftImage: MultipartBody.Part?, product: RequestBody, price: Int, dueDate: RequestBody, store: RequestBody, autoDonation: Boolean) =
-        viewModelScope.launch(Dispatchers.IO) {
-            _addToWalletInfo.postValue(
-                RetrofitBuilder.donationService.requestAddToWallet("Bearer $accessToken", giftImage, product, price, dueDate, store, autoDonation)
-            )
+    fun requestDonateGiver(accessToken: String, giftImage: MultipartBody.Part?, product: RequestBody, price: Int, dueDate: RequestBody, store: RequestBody, isRestored: RequestBody) {
+        handleRequest(_donateGiverInfo) {
+            RetrofitBuilder.donationService.donateGiver("Bearer $accessToken", giftImage, product, price, dueDate, store, isRestored)
         }
+    }
 
-    fun requestDirectDonation(accessToken: String, giftId: Long) = viewModelScope.launch(Dispatchers.IO){
-        _donateDirectInfo.postValue((RetrofitBuilder.donationService.requestDirectDonation("Bearer $accessToken", giftId)))
+    fun requestAddToWallet(accessToken: String, giftImage: MultipartBody.Part?, product: RequestBody, price: Int, dueDate: RequestBody, store: RequestBody, autoDonation: Boolean) {
+        handleRequest(_addToWalletInfo) {
+            RetrofitBuilder.donationService.requestAddToWallet("Bearer $accessToken", giftImage, product, price, dueDate, store, autoDonation)
+        }
+    }
+
+    fun requestDirectDonation(accessToken: String, giftId: Long) {
+        handleRequest(_donateDirectInfo) {
+            RetrofitBuilder.donationService.requestDirectDonation("Bearer $accessToken", giftId)
+        }
     }
 }

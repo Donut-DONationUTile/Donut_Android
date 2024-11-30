@@ -11,19 +11,21 @@ import org.gdgoc.donut.data.api.RetrofitBuilder
 import org.gdgoc.donut.data.remote.response.history.ResponseHistoryGiver
 import org.gdgoc.donut.data.remote.response.history.ResponseHistoryGiverDetail
 import org.gdgoc.donut.data.remote.response.history.ResponseHistoryReceiver
+import org.gdgoc.donut.util.NetworkState
 import java.time.LocalDateTime
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
-    private val _receiverHistoryInfo = MutableLiveData<ResponseHistoryReceiver>()
-    val receiverHistoryInfo: LiveData<ResponseHistoryReceiver>
+
+    private val _receiverHistoryInfo = MutableLiveData<NetworkState<ResponseHistoryReceiver>>()
+    val receiverHistoryInfo: LiveData<NetworkState<ResponseHistoryReceiver>>
         get() = _receiverHistoryInfo
 
-    private val _giverHistoryInfo = MutableLiveData<ResponseHistoryGiver>()
-    val giverHistoryInfo: LiveData<ResponseHistoryGiver>
+    private val _giverHistoryInfo = MutableLiveData<NetworkState<ResponseHistoryGiver>>()
+    val giverHistoryInfo: LiveData<NetworkState<ResponseHistoryGiver>>
         get() = _giverHistoryInfo
 
-    private val _giverHistoryDetailInfo = MutableLiveData<ResponseHistoryGiverDetail>()
-    val giverHistoryDetailInfo: LiveData<ResponseHistoryGiverDetail>
+    private val _giverHistoryDetailInfo = MutableLiveData<NetworkState<ResponseHistoryGiverDetail>>()
+    val giverHistoryDetailInfo: LiveData<NetworkState<ResponseHistoryGiverDetail>>
         get() = _giverHistoryDetailInfo
 
     val sharedGiftId = MutableLiveData<Long>()
@@ -31,21 +33,36 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
         sharedGiftId.value = input
     }
 
-    fun requestReceiverHistoryInfo(accessToken: String) = viewModelScope.launch(Dispatchers.IO) {
-        _receiverHistoryInfo.postValue(
+    private fun <T> handleRequest(
+        liveData: MutableLiveData<NetworkState<T>>,
+        requestBlock: suspend () -> T
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            liveData.postValue(NetworkState.Loading)
+            try {
+                val response = requestBlock()
+                liveData.postValue(NetworkState.Success(response))
+            } catch (e: Exception) {
+                liveData.postValue(NetworkState.Error("Error: ${e.message}"))
+            }
+        }
+    }
+
+    fun requestReceiverHistoryInfo(accessToken: String) {
+        handleRequest(_receiverHistoryInfo) {
             RetrofitBuilder.historyService.getReceiverHistoryInfo("Bearer $accessToken")
-        )
+        }
     }
 
-    fun requestGiverHistoryInfo(accessToken: String, date: LocalDateTime) = viewModelScope.launch(Dispatchers.IO) {
-        _giverHistoryInfo.postValue(
+    fun requestGiverHistoryInfo(accessToken: String, date: LocalDateTime) {
+        handleRequest(_giverHistoryInfo) {
             RetrofitBuilder.historyService.getGiverHistoryInfo("Bearer $accessToken", date)
-        )
+        }
     }
 
-    fun requestGiverHistoryDetailInfo(accessToken: String, giftId: Long) = viewModelScope.launch(Dispatchers.IO) {
-        _giverHistoryDetailInfo.postValue(
+    fun requestGiverHistoryDetailInfo(accessToken: String, giftId: Long) {
+        handleRequest(_giverHistoryDetailInfo) {
             RetrofitBuilder.historyService.getGiverHistoryDetailInfo("Bearer $accessToken", giftId)
-        )
+        }
     }
 }

@@ -18,6 +18,7 @@ import org.gdgoc.donut.data.DonutSharedPreferences
 import org.gdgoc.donut.databinding.FragmentReceiveAmountBinding
 import org.gdgoc.donut.ui.ReceiverMainActivity
 import org.gdgoc.donut.ui.viewModel.DonationViewModel
+import org.gdgoc.donut.util.NetworkState
 
 class ReceiveAmountFragment : Fragment() {
     private lateinit var binding: FragmentReceiveAmountBinding
@@ -65,21 +66,38 @@ class ReceiveAmountFragment : Fragment() {
     }
 
     private fun sendReceiveInfo() {
-        DonutSharedPreferences.getAccessToken()?.let { viewModel.requestAssignReceiver(it, binding.etAmount.text.toString().toInt()) }
+        val amountText = binding.etAmount.text.toString()
+        if (amountText.isBlank()) {
+            Toast.makeText(context, "금액을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        viewModel.assignReceiverInfo.observe(viewLifecycleOwner, Observer{ data ->
-            if(data.code == 201){
-                requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
-                startActivity(Intent(context, ReceiveDoneActivity::class.java))
-            } else {
-                Toast.makeText(context, "신청이 승인되지 않았습니다.", Toast.LENGTH_SHORT).show()
-            }
-        })
+        val amount = try {
+            amountText.toInt()
+        } catch (e: NumberFormatException) {
+            Toast.makeText(context, "올바른 금액을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        viewModel.showErrorToast.observe(viewLifecycleOwner, Observer {
-            it.getContentIfNotHandled()?.let{
-                Toast.makeText(context, "신청이 승인되지 않았습니다.", Toast.LENGTH_SHORT).show()
+        DonutSharedPreferences.getAccessToken()?.let { token ->
+            viewModel.requestAssignReceiver(token, amount)
+        }
+
+        viewModel.assignReceiverInfo.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is NetworkState.Loading -> {}
+                is NetworkState.Success -> {
+                    if (state.data.code == 201) {
+                        requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
+                        startActivity(Intent(context, ReceiveDoneActivity::class.java))
+                    } else {
+                        Toast.makeText(context, "신청이 승인되지 않았습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                is NetworkState.Error -> {
+                    Toast.makeText(context, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                }
             }
-        })
+        }
     }
 }
