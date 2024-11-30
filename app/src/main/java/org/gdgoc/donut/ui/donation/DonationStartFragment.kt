@@ -29,13 +29,11 @@ class DonationStartFragment : Fragment() {
     private fun setButton(){
         binding.btnWallet.setOnClickListener {
             viewModel.setDirectDonationOption(false)
-            requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
             (activity as GiverMainActivity).changeFragment("donation")
         }
 
         binding.btnDonate.setOnClickListener {
             viewModel.setDirectDonationOption(true)
-            requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
             (activity as GiverMainActivity).changeFragment("donation")
         }
     }

@@ -321,7 +321,6 @@ class DonationFragment : Fragment() {
         val dueDate = (binding.etDue.text.toString()+"T00:00:00.000000").toRequestBody("text/plain".toMediaTypeOrNull())
 
         viewModel.setGifticonInfo(imgString, product, price, dueDate, store)
-        requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
         (activity as GiverMainActivity).changeFragment("donation_check")
     }
 }
