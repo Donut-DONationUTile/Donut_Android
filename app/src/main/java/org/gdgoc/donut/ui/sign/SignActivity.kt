@@ -185,7 +185,7 @@ class SignActivity : AppCompatActivity() {
                     }
                 }
                 is NetworkState.Error -> {
-                    Toast.makeText(this, "잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -209,7 +209,7 @@ class SignActivity : AppCompatActivity() {
                     }
                 }
                 is NetworkState.Error -> {
-                    Toast.makeText(this, "잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "서버 오류입니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         })
