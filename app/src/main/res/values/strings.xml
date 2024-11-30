@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Donut</string>
     <!-- client_id 그대로 붙여넣어야 함. 안 그러면 com.google.android.gms.common.api.ApiException: 10 에러 뜸 -->
-    <string name="google_login_client_id">959647553332-qghuan78htcaa776tj4nd5q8hdt8vtva.apps.googleusercontent.com</string>
+    <string name="google_login_client_id">979566713113-qbo47jovq67m4qgl2jqm8bvf1oor2gk2.apps.googleusercontent.com</string>
 
     <!-- Common -->
     <string name="dollar">₩</string>
